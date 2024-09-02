@@ -32,7 +32,7 @@ watch(selectedKeys, async (newSelectedKeys) => {
 
 <template>
   <div class="app-container">
-    <h1>Welcome to the Vue Application, Young Padawan</h1>
+    <h1>All of the Latest Deals</h1>
     <div class="app-body">
       <div class="grid-container">
         <input v-model="filterKey" placeholder="Filter rows" class="filter-input" />
