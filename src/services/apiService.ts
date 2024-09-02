@@ -11,7 +11,7 @@ const originalGridData = [
   { key: 'custom_deal_identifiers', type: 'string[]', label: 'Identifiers' }
 ];
 
-const largeGridData = Array(100).fill(originalGridData).flat().map((item, index) => ({
+const largeGridData = Array(2000).fill(originalGridData).flat().map((item, index) => ({
   ...item,
   key: index.toString()
 }));

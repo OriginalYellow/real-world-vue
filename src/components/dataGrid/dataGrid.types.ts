@@ -1,4 +1,4 @@
-export interface DataItem {
+interface DataItem {
   key: any;
   [key: string]: any;
 }

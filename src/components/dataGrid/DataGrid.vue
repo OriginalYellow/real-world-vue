@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useVirtualList } from '@vueuse/core'
-import type { DataGridProps, DataItem } from './dataGrid.types';
+import type { DataGridProps } from './dataGrid.types';
 import { capitalize } from '@/utils/stringHelpers';
 
 const props = defineProps<DataGridProps>();
@@ -10,7 +10,7 @@ const props = defineProps<DataGridProps>();
 const sortKey = ref('')
 const selectedKeys = defineModel<Set<string>>('selectedKeys', { default: () => new Set() });
 
-// initialize sortOrders a new object with the keys from the column names an
+// initialize sortOrders a new object with the keys from the column names and
 // give each the value of 1
 const sortOrders = ref(
   props.columns.reduce<Record<string, number>>((o, key) => {
@@ -85,9 +85,9 @@ function toggleSelection(key: string) {
     </div>
     <div v-bind="containerProps" class="virtual-list-container">
       <div v-bind="wrapperProps">
-        <div v-for="{ data: entry } in list" 
+        <div v-for="{ data: entry, index } in list" 
              :key="entry.key" 
-             :class="{ row: true, 'selected-row': isSelected(entry.key) }"
+             :class="{ row: true, 'selected-row': isSelected(entry.key), even: (index % 2) === 0 }"
              @click="toggleSelection(entry.key)">
           <div v-for="key in columns" class="cell">
             {{entry[key]}}
@@ -136,7 +136,7 @@ function toggleSelection(key: string) {
   display: flex;
   cursor: pointer;
 
-  &:nth-child(even) {
+  &.even {
     background-color: $alternate-list-background;
   }
 
