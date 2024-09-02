@@ -9,6 +9,7 @@ const gridColumns = ['key', 'type', 'label'];
 const selectedKeys = ref<Set<string>>(new Set());
 const selectedItemDetails = ref<Record<string, any> | null>(null);
 const filterKey = ref('');
+const loading = ref(false);
 
 onMounted(async () => {
   gridData.value = await fetchGridData();
@@ -16,8 +17,10 @@ onMounted(async () => {
 
 watch(selectedKeys, async (newSelectedKeys) => {
   if (newSelectedKeys.size === 1) {
+    loading.value = true;
     const selectedKey = Array.from(newSelectedKeys)[0];
     selectedItemDetails.value = await fetchGridItemDetails(selectedKey);
+    loading.value = false;
   } else {
     selectedItemDetails.value = null;
   }
@@ -26,42 +29,54 @@ watch(selectedKeys, async (newSelectedKeys) => {
 
 <template>
   <div class="app-container">
-    <div class="grid-container">
-      <h1>Welcome to Our Vue Application</h1>
-      <input v-model="filterKey" placeholder="Filter rows" class="filter-input" />
-      <DataGrid 
-        v-model:selectedKeys="selectedKeys" 
-        :data="gridData" 
-        :columns="gridColumns" 
-        :filterKey="filterKey"
-      />
+    <h1>Welcome to the Vue Application, Young Padawan</h1>
+    <div class="app-body">
+      <div class="grid-container">
+        <input v-model="filterKey" placeholder="Filter rows" class="filter-input" />
+        <DataGrid 
+          v-model:selectedKeys="selectedKeys" 
+          :data="gridData" 
+          :columns="gridColumns" 
+          :filterKey="filterKey"
+        />
+      </div>
+      <DetailsView v-if="selectedItemDetails || loading" :details="selectedItemDetails" :loading="loading" />
     </div>
-    <DetailsView v-if="selectedItemDetails" :details="selectedItemDetails" />
   </div>
 </template>
 
 <style lang="scss" scoped>
-.app-container {
-  display: flex;
-  max-width: 2000px;
-  margin: 0 auto;
-  padding: 2rem;
+// global styles
+:global(body) {
+  background-color: #f0f4f8;
   font-family: Arial, sans-serif;
 }
 
-.grid-container {
-  flex: 1;
-  margin-right: 2rem;
-  width: 100%; // Added to ensure full width
+// component styles
+.app-container {
+  width: 75vw;
+  margin: 0 auto;
+  padding: 2rem;
 
   h1 {
-    color: #007bff;
+    color: #333;
     font-size: 2rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 600;
   }
+}
+
+.app-body {
+  display: flex;
+}
+
+.grid-container {
+  margin-right: 2rem;
+  width: 100%;
 
   .filter-input {
-    width: 100%;
+    width: 250px;
     padding: 0.5rem;
     margin-bottom: 1rem;
     border: 1px solid #ccc;

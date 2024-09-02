@@ -79,7 +79,6 @@ function toggleSelection(key: string) {
     newSet.add(key);
   }
   selectedKeys.value = newSet;
-  console.log(`Selected keys: ${Array.from(selectedKeys.value).join(', ')}`);
 }
 
 </script>
@@ -113,45 +112,49 @@ function toggleSelection(key: string) {
 
 <style>
 .data-grid {
-  border: 2px solid #42b983;
-  border-radius: 3px;
+  min-width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   background-color: #fff;
-  color: #333; /* Dark text color for the entire grid */
+  color: #333;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
 .header {
   display: flex;
-  background-color: #42b983;
+  background-color: #2c3e50;
+  border-bottom: 2px solid #3498db;
 }
 
 .column {
   flex: 1;
-  color: #fff; /* Keep header text white for contrast */
+  color: #fff;
   cursor: pointer;
   user-select: none;
-  padding: 10px 20px;
+  padding: 1rem;
   min-width: 120px;
+  font-weight: 600;
 }
 
 .row {
   display: flex;
-  height: 40px; /* This should match the itemHeight in useVirtualList */
-  cursor: pointer; /* Add this line */
+  cursor: pointer;
 }
 
 .cell {
   flex: 1;
-  background-color: #f9f9f9;
-  padding: 10px 20px;
+  padding: 0.75rem 1rem;
   min-width: 120px;
 }
 
-.column.active {
-  font-weight: bold; /* Use bold instead of color change for active state */
+.row:nth-child(even) {
+  background-color: #f8f9fa;
 }
 
-.column.active .arrow {
-  opacity: 1;
+.column.active {
+  font-weight: bold;
+  border-bottom: 2px solid #3498db;
 }
 
 .arrow {
@@ -160,7 +163,7 @@ function toggleSelection(key: string) {
   width: 0;
   height: 0;
   margin-left: 5px;
-  opacity: 0.66;
+  opacity: 0.8;
 }
 
 .arrow.asc {
@@ -176,15 +179,15 @@ function toggleSelection(key: string) {
 }
 
 .virtual-list-container {
-  height: 400px; /* Adjust this value based on your desired height */
+  height: 400px;
   overflow-y: auto;
 }
 
 .selected-row {
-  background-color: #c5e8ff;
+  background-color: #e1f0fa !important;
 }
 
 .selected-row .cell {
-  background-color: #c5e8ff;
+  background-color: transparent;
 }
 </style>
