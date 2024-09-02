@@ -1,22 +1,17 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useVirtualList } from '@vueuse/core'
-
-interface DataItem {
-  key: any;
-  [key: string]: any;
-}
-
-interface DataGridProps {
-  data: Array<DataItem>;
-  columns: Array<string>;
-  filterKey?: string;
-}
+import type { DataGridProps, DataItem } from './dataGrid.types';
+import { capitalize } from '@/utils/stringHelpers';
 
 const props = defineProps<DataGridProps>();
 
+// ===== Refs, v-models, and computed properties =====
 const sortKey = ref('')
-// this is going to create a new object with the keys equal to the columns and the value of 1
+const selectedKeys = defineModel<Set<string>>('selectedKeys', { default: () => new Set() });
+
+// initialize sortOrders a new object with the keys from the column names an
+// give each the value of 1
 const sortOrders = ref(
   props.columns.reduce<Record<string, number>>((o, key) => {
     o[key] = 1;
@@ -24,9 +19,10 @@ const sortOrders = ref(
   }, {})
 )
 
-const filteredData = computed(() => {
+const filteredSortedData = computed(() => {
   let { data, filterKey } = props
-  // this will check if any values of a row contains the filterKey and filter for them
+  // this will check if any values of a row contains the filterKey and filter
+  // for them
   if (filterKey && typeof filterKey === 'string') {
     filterKey = filterKey.toLowerCase()
     data = data.filter((row) => {
@@ -48,23 +44,18 @@ const filteredData = computed(() => {
   return data
 })
 
+// ===== Virtual list =====
 const { list, containerProps, wrapperProps } = useVirtualList(
-  filteredData,
+  filteredSortedData,
   {
-    itemHeight: 40, // Adjust this value based on your actual row height
+    itemHeight: 40,
   }
 )
 
-// Replace the computed selectedKeys with a simple ref
-const selectedKeys = defineModel<Set<string>>('selectedKeys', { default: () => new Set() });
-
+// ===== Methods =====
 function sortBy(key: string) {
   sortKey.value = key
   sortOrders.value[key] *= -1
-}
-
-function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 function isSelected(key: string): boolean {
@@ -80,11 +71,10 @@ function toggleSelection(key: string) {
   }
   selectedKeys.value = newSet;
 }
-
 </script>
 
 <template>
-  <div v-if="filteredData.length" class="data-grid">
+  <div v-if="filteredSortedData.length" class="container">
     <div class="header">
       <div v-for="key in columns" 
            @click="sortBy(key)" 
@@ -97,8 +87,7 @@ function toggleSelection(key: string) {
       <div v-bind="wrapperProps">
         <div v-for="{ data: entry } in list" 
              :key="entry.key" 
-             class="row"
-             :class="{ 'selected-row': isSelected(entry.key) }"
+             :class="{ row: true, 'selected-row': isSelected(entry.key) }"
              @click="toggleSelection(entry.key)">
           <div v-for="key in columns" class="cell">
             {{entry[key]}}
@@ -110,23 +99,24 @@ function toggleSelection(key: string) {
   <p v-else>No matches found.</p>
 </template>
 
-<style>
-.data-grid {
+<style scoped lang="scss">
+@import "@/styles/styles.scss";
+
+/* container styles */
+.container {
+  @include card-container;
   min-width: 100%;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #fff;
-  color: #333;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
+/* header styles */
 .header {
+  @include blue-bottom-border;
   display: flex;
   background-color: #2c3e50;
-  border-bottom: 2px solid #3498db;
 }
 
+/* table styles */
 .column {
   flex: 1;
   color: #fff;
@@ -135,11 +125,28 @@ function toggleSelection(key: string) {
   padding: 1rem;
   min-width: 120px;
   font-weight: 600;
+
+  &.active {
+    @include blue-bottom-border;
+    font-weight: bold;
+  }
 }
 
 .row {
   display: flex;
   cursor: pointer;
+
+  &:nth-child(even) {
+    background-color: $alternate-list-background;
+  }
+
+  &.selected-row {
+    background-color: #e1f0fa;
+
+    .cell {
+      background-color: transparent;
+    }
+  }
 }
 
 .cell {
@@ -148,15 +155,7 @@ function toggleSelection(key: string) {
   min-width: 120px;
 }
 
-.row:nth-child(even) {
-  background-color: #f8f9fa;
-}
-
-.column.active {
-  font-weight: bold;
-  border-bottom: 2px solid #3498db;
-}
-
+/* arrow styles */
 .arrow {
   display: inline-block;
   vertical-align: middle;
@@ -164,30 +163,26 @@ function toggleSelection(key: string) {
   height: 0;
   margin-left: 5px;
   opacity: 0.8;
+
+  $arrow-side-border: 4px solid transparent;
+  $arrow-top-border: 4px solid #fff;
+
+  &.asc {
+    border-left: $arrow-side-border;
+    border-right: $arrow-side-border;
+    border-bottom: $arrow-top-border;
+  }
+
+  &.dsc {
+    border-left: $arrow-side-border;
+    border-right: $arrow-side-border;
+    border-top: $arrow-top-border;
+  }
 }
 
-.arrow.asc {
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 4px solid #fff;
-}
-
-.arrow.dsc {
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 4px solid #fff;
-}
-
+/* virtual list container styles */
 .virtual-list-container {
   height: 400px;
   overflow-y: auto;
-}
-
-.selected-row {
-  background-color: #e1f0fa !important;
-}
-
-.selected-row .cell {
-  background-color: transparent;
 }
 </style>
